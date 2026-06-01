@@ -1,0 +1,6 @@
+{
+  "name": "Bangla AI Keyboard",
+  "description": "An advanced, feature-rich Bangla keyboard supporting AI chat via Groq API, phonetic transliteration (Avro style), voice typing, customization and security.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
