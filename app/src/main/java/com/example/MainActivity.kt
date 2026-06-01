@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -55,33 +57,72 @@ class MainActivity : ComponentActivity() {
         repository = KeyboardRepository(database)
 
         setContent {
-            MyApplicationTheme {
+            MyApplicationTheme(darkTheme = true, dynamicColor = false) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
+                    containerColor = Color(0xFF121212),
                     topBar = {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    Brush.horizontalGradient(
-                                        listOf(Color(0xFF0F0E17), Color(0xFFE53170))
-                                    )
+                                    Color(0xFF1C1B1F),
+                                    shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
                                 )
                                 .statusBarsPadding()
-                                .padding(vertical = 16.dp, horizontal = 20.dp)
+                                .padding(vertical = 18.dp, horizontal = 20.dp)
                         ) {
-                            Column {
-                                Text(
-                                    text = "Bangla AI Keyboard 🌟",
-                                    color = Color.White,
-                                    fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = "উন্নত কৃত্রিম বুদ্ধিমত্তা সম্পন্ন বাংলা কীবোর্ড",
-                                    color = Color.White.copy(alpha = 0.8f),
-                                    fontSize = 12.sp
-                                )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Bangla AI ",
+                                            color = Color.White,
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "Pro",
+                                            color = Color(0xFFA855F7),
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = "ADVANCED INPUT SYSTEM",
+                                        color = Color(0xFF64748B),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.sp
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(Color(0xFF25232A), shape = RoundedCornerShape(12.dp))
+                                        .border(1.dp, Color(0xFF334155), shape = RoundedCornerShape(12.dp))
+                                        .clickable {
+                                            try {
+                                                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                                                imm?.showInputMethodPicker()
+                                            } catch (e: Exception) {
+                                                Toast.makeText(this@MainActivity, "Picker not supported.", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Settings,
+                                        contentDescription = "IME Settings Picker",
+                                        tint = Color(0xFFA855F7),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         }
                     }
@@ -111,6 +152,9 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
     var vibrationEnabled by remember { mutableStateOf(prefs.isVibrationEnabled) }
     var popupEnabled by remember { mutableStateOf(prefs.isPopupEnabled) }
     var suggestionStripEnabled by remember { mutableStateOf(prefs.isSuggestionStripEnabled) }
+
+    // Active Layout Selection state
+    var activeLayout by remember { mutableStateOf(prefs.activeLayout) }
 
     // API Configurations
     var groqApiKey by remember { mutableStateOf(prefs.groqApiKey) }
@@ -148,36 +192,53 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFFAF9F6))
+            .background(Color(0xFF121212))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // STEP 1: Enable System IME configuration Wizard
         item {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1B1F)),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, Color(0xFF2D2A37)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.SettingsSuggest,
-                            contentDescription = "IME Onboard Info",
-                            tint = Color(0xFFE53170),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Set Up Keyboard (কীবোর্ড চালু করুন)",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F0E17)
-                        )
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color(0xFF3B0764), shape = RoundedCornerShape(20.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SettingsSuggest,
+                                contentDescription = "IME Onboard Info",
+                                tint = Color(0xFFA855F7),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Set Up Keyboard",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "কীবোর্ড সচল করার ধাপসমূহ",
+                                fontSize = 11.sp,
+                                color = Color(0xFF94A3B8)
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     StatusStepRow(
                         stepNum = "1",
@@ -193,11 +254,11 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                         }
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     StatusStepRow(
                         stepNum = "2",
-                        title = "Select as Default Input Method",
+                        title = "Select as Default Input",
                         status = isKeyboardSelected,
                         onAction = {
                             val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
@@ -212,39 +273,82 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
             }
         }
 
-        // STEP 2: Groq gpt-oss-120b API Configuration Card
+        // STEP 2: Groq Powered AI Chat Bento Card (Large)
         item {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                modifier = Modifier.fillMaxWidth()
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, Color(0xFFA855F7).copy(alpha = 0.35f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.linearGradient(
+                            listOf(Color(0xFF3B0764).copy(alpha = 0.45f), Color(0xFF1E1B4B).copy(alpha = 0.45f))
+                        ),
+                        shape = RoundedCornerShape(24.dp)
+                    )
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Android,
-                            contentDescription = "Groq Setup Icon",
-                            tint = Color(0xFF12B76A),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Groq Key Setup (এআই চ্যাট সেটিংস)",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F0E17)
-                        )
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(Color(0xFF581C87), shape = RoundedCornerShape(12.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Android,
+                                    contentDescription = "Groq Setup Icon",
+                                    tint = Color(0xFFC084FC),
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Smart AI Chat Configuration",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = "এআই চ্যাট সেটিংস ও মডেল আইডি",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFFC084FC)
+                                )
+                            }
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(100.dp))
+                                .background(Color(0xFF581C87).copy(alpha = 0.5f))
+                                .border(1.dp, Color(0xFFA855F7).copy(alpha = 0.5f), RoundedCornerShape(100.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Groq Powered",
+                                color = Color(0xFFD8B4FE),
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Paste your Groq API key here. Tap the AI button on your keyboard to chat natively while typing.",
+                        text = "Paste your Groq API key below. You can trigger the native AI chat in your keyboard view at any time while typing.",
                         fontSize = 11.sp,
-                        color = Color.Gray
+                        color = Color(0xFFCBD5E1),
+                        lineHeight = 16.sp
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
                         value = groqApiKey,
@@ -259,16 +363,25 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                             IconButton(onClick = { apiVisible = !apiVisible }) {
                                 Icon(
                                     imageVector = if (apiVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                                    contentDescription = "Toggle visibility"
+                                    contentDescription = "Toggle visibility",
+                                    tint = Color(0xFF94A3B8)
                                 )
                             }
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF12B76A)
-                        )
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFFA855F7),
+                            unfocusedBorderColor = Color(0xFF2D2A37),
+                            focusedContainerColor = Color(0xFF121212).copy(alpha = 0.5f),
+                            unfocusedContainerColor = Color(0xFF121212).copy(alpha = 0.5f),
+                            focusedLabelColor = Color(0xFFA855F7),
+                            unfocusedLabelColor = Color(0xFF64748B)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     OutlinedTextField(
                         value = aiModelState,
@@ -279,8 +392,16 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                         label = { Text("AI Model ID") },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF12B76A)
-                        )
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFFA855F7),
+                            unfocusedBorderColor = Color(0xFF2D2A37),
+                            focusedContainerColor = Color(0xFF121212).copy(alpha = 0.5f),
+                            unfocusedContainerColor = Color(0xFF121212).copy(alpha = 0.5f),
+                            focusedLabelColor = Color(0xFFA855F7),
+                            unfocusedLabelColor = Color(0xFF64748B)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -288,7 +409,7 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                     Text(
                         text = "Default Model: openai/gpt-oss-120b",
                         fontSize = 11.sp,
-                        color = Color(0xFF12B76A),
+                        color = Color(0xFFC084FC),
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             aiModelState = "openai/gpt-oss-120b"
@@ -299,35 +420,200 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
             }
         }
 
-        // STEP 3: Customize Heights, Feeds and Sizes
+        // STEP 3: Bento Grid Layout Asymmetric Row (Side-by-Side Cards)
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Left Column: Active Layout Switcher Card
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1B1F)),
+                    shape = RoundedCornerShape(24.dp),
+                    border = BorderStroke(1.dp, Color(0xFF2D2A37)),
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .height(220.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "SYSTEM LAYOUT",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF94A3B8),
+                            letterSpacing = 1.sp
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            listOf("Phonetic", "Probhat", "English", "National").forEach { layout ->
+                                val isSelected = activeLayout == layout
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(if (isSelected) Color(0xFF25232A) else Color.Transparent)
+                                        .border(
+                                            1.dp,
+                                            if (isSelected) Color(0xFF4ADE80).copy(alpha = 0.3f) else Color.Transparent,
+                                            RoundedCornerShape(10.dp)
+                                        )
+                                        .clickable {
+                                            activeLayout = layout
+                                            prefs.activeLayout = layout
+                                            Toast.makeText(context, "$layout layout set as default", Toast.LENGTH_SHORT).show()
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(if (isSelected) Color(0xFF4ADE80) else Color(0xFF475569))
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = layout,
+                                        color = if (isSelected) Color.White else Color(0xFF94A3B8),
+                                        fontSize = 12.sp,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Right Column: Expressive/Feature Switches Card
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1B1F)),
+                    shape = RoundedCornerShape(24.dp),
+                    border = BorderStroke(1.dp, Color(0xFF2D2A37)),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(220.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "PREFEEDS",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF94A3B8),
+                            letterSpacing = 1.sp
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // Sound click toggle
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "Sounds", fontSize = 11.sp, color = Color.White)
+                                Switch(
+                                    checked = soundEnabled,
+                                    onCheckedChange = {
+                                        soundEnabled = it
+                                        prefs.isSoundEnabled = it
+                                    },
+                                    modifier = Modifier.scale(0.75f)
+                                )
+                            }
+
+                            // Vibration toggle
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "Haptic", fontSize = 11.sp, color = Color.White)
+                                Switch(
+                                    checked = vibrationEnabled,
+                                    onCheckedChange = {
+                                        vibrationEnabled = it
+                                        prefs.isVibrationEnabled = it
+                                    },
+                                    modifier = Modifier.scale(0.75f)
+                                )
+                            }
+
+                            // Popup previews toggle
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "Popups", fontSize = 11.sp, color = Color.White)
+                                Switch(
+                                    checked = popupEnabled,
+                                    onCheckedChange = {
+                                        popupEnabled = it
+                                        prefs.isPopupEnabled = it
+                                    },
+                                    modifier = Modifier.scale(0.75f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // STEP 4: Customize Heights & Sizing Card
         item {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1B1F)),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, Color(0xFF2D2A37)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Tune,
-                            contentDescription = "Haptics setup",
-                            tint = Color(0xFF1570EF),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Haptics & Custom Sizing (কীবোর্ড সাইজ ও ফিডব্যাক)",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F0E17)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color(0xFF1E293B), shape = RoundedCornerShape(20.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Tune,
+                                contentDescription = "Haptics setup",
+                                tint = Color(0xFF38BDF8),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Haptics & Custom Sizing",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "কীবোর্ড আকার ও স্পন্দনকাল নির্ধারণ",
+                                fontSize = 11.sp,
+                                color = Color(0xFF38BDF8)
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                    // Heights Sliders
-                    Text(text = "Portrait Height Multiplier: ${String.format("%.2f", heightPortrait)}x", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Portrait Height Multiplier: ${String.format("%.2f", heightPortrait)}x",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF94A3B8)
+                    )
                     Slider(
                         value = heightPortrait,
                         onValueChange = {
@@ -335,12 +621,20 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                             prefs.heightPortrait = it
                         },
                         valueRange = 0.7f..1.5f,
-                        colors = SliderDefaults.colors(activeTrackColor = Color(0xFF1570EF))
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = Color(0xFF38BDF8),
+                            thumbColor = Color(0xFF38BDF8)
+                        )
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    Text(text = "Landscape Height Multiplier: ${String.format("%.2f", heightLandscape)}x", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Landscape Height Multiplier: ${String.format("%.2f", heightLandscape)}x",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF94A3B8)
+                    )
                     Slider(
                         value = heightLandscape,
                         onValueChange = {
@@ -348,12 +642,20 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                             prefs.heightLandscape = it
                         },
                         valueRange = 0.7f..1.5f,
-                        colors = SliderDefaults.colors(activeTrackColor = Color(0xFF1570EF))
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = Color(0xFF38BDF8),
+                            thumbColor = Color(0xFF38BDF8)
+                        )
                     )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    Text(text = "Vibration Duration: ${vibrationMs.toInt()} ms", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Vibration Duration: ${vibrationMs.toInt()} ms",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF94A3B8)
+                    )
                     Slider(
                         value = vibrationMs,
                         onValueChange = {
@@ -361,86 +663,55 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                             prefs.vibrationMs = it.toInt()
                         },
                         valueRange = 0f..100f,
-                        colors = SliderDefaults.colors(activeTrackColor = Color(0xFF1570EF))
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = Color(0xFF38BDF8),
+                            thumbColor = Color(0xFF38BDF8)
+                        )
                     )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Switches
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "Key vibration feedback", fontSize = 13.sp)
-                        Switch(
-                            checked = vibrationEnabled,
-                            onCheckedChange = {
-                                vibrationEnabled = it
-                                prefs.isVibrationEnabled = it
-                            }
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "Keypress sound clicks", fontSize = 13.sp)
-                        Switch(
-                            checked = soundEnabled,
-                            onCheckedChange = {
-                                soundEnabled = it
-                                prefs.isSoundEnabled = it
-                            }
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "Key hover popup previews", fontSize = 13.sp)
-                        Switch(
-                            checked = popupEnabled,
-                            onCheckedChange = {
-                                popupEnabled = it
-                                prefs.isPopupEnabled = it
-                            }
-                        )
-                    }
                 }
             }
         }
 
-        // STEP 4: Keyboard Theme Store Dashboard
+        // STEP 5: Keyboard Theme Store Dashboard
         item {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1B1F)),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, Color(0xFF2D2A37)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.Palette,
-                            contentDescription = "Themes Store info",
-                            tint = Color(0xFF7433FF),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Keyboard Theme Store (কীবোর্ড থিম স্টোর)",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F0E17)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color(0xFF1E293B), shape = RoundedCornerShape(20.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Palette,
+                                contentDescription = "Themes Store info",
+                                tint = Color(0xFFC084FC),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Keyboard Theme Store",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "কীবোর্ড থিম সিলেক্ট করুন",
+                                fontSize = 11.sp,
+                                color = Color(0xFFC084FC)
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     LazyRow(
                         modifier = Modifier.fillMaxWidth(),
@@ -450,9 +721,10 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                             val isSelected = selectedTheme == themeName
                             Card(
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) Color(0xFF7433FF) else Color(0xFFF3F4F6)
+                                    containerColor = if (isSelected) Color(0xFFA855F7) else Color(0xFF25232A)
                                 ),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(1.dp, if (isSelected) Color.White else Color(0xFF2D2A37)),
                                 modifier = Modifier
                                     .clickable {
                                         selectedTheme = themeName
@@ -462,10 +734,10 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                             ) {
                                 Text(
                                     text = themeName,
-                                    color = if (isSelected) Color.White else Color(0xFF2E2D30),
+                                    color = if (isSelected) Color.White else Color(0xFFCBD5E1),
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
                                 )
                             }
                         }
@@ -474,45 +746,72 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
             }
         }
 
-        // STEP 5: Bangla Custom Dictionary Learning Board
+        // STEP 6: Custom learned Dictionary Learning Board
         item {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1C1B1F)),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, Color(0xFF2D2A37)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.MenuBook,
-                            contentDescription = "Dictionary Store",
-                            tint = Color(0xFFFF9800),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Custom learned Dictionary (শব্দকোষ)",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F0E17)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(Color(0xFF332005), shape = RoundedCornerShape(20.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MenuBook,
+                                contentDescription = "Dictionary Store",
+                                tint = Color(0xFFF59E0B),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Custom Learned Dictionary",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "নতুন বা ব্যক্তিগত শব্দকোষের তালিকা",
+                                fontSize = 11.sp,
+                                color = Color(0xFFF59E0B)
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "Add typical or personal words for fast automatic predictions.", fontSize = 11.sp, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Add typical or personal words for fast automatic predictions.",
+                        fontSize = 11.sp,
+                        color = Color(0xFF94A3B8)
+                    )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         OutlinedTextField(
                             value = customWordInput,
                             onValueChange = { customWordInput = it },
-                            placeholder = { Text("নতুন শব্দ লিখুন...") },
+                            placeholder = { Text("নতুন শব্দ লিখুন...", color = Color(0xFF64748B)) },
                             modifier = Modifier.weight(1f),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFFFF9800)
-                            )
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                focusedBorderColor = Color(0xFFF59E0B),
+                                unfocusedBorderColor = Color(0xFF2D2A37),
+                                focusedContainerColor = Color(0xFF121212),
+                                unfocusedContainerColor = Color(0xFF121212)
+                            ),
+                            shape = RoundedCornerShape(12.dp)
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
@@ -522,7 +821,6 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                                 if (customWordInput.isNotBlank()) {
                                     val newEntry = DictionaryEntry(word = customWordInput, language = "bn")
                                     context.getSharedPreferences("keyboard_settings", Context.MODE_PRIVATE)
-                                    // save to DB
                                     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
                                         repository.insertWord(newEntry)
                                     }
@@ -530,28 +828,50 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                                     Toast.makeText(context, "Word learned successfully!", Toast.LENGTH_SHORT).show()
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-                            modifier = Modifier.align(Alignment.CenterVertically)
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B)),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.height(56.dp)
                         ) {
-                            Text("যোগ করুন")
+                            Text("যোগ করুন", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(text = "Saved custom word list:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                    Text(
+                        text = "Saved custom word list:",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF94A3B8)
+                    )
                     
+                    Spacer(modifier = Modifier.height(6.dp))
+
                     if (customWords.isEmpty()) {
-                        Text(text = "Dictionary is blank. Add your custom words.", fontSize = 11.sp, color = Color.Gray, modifier = Modifier.padding(vertical = 4.dp))
+                        Text(
+                            text = "Dictionary is blank. Add your custom words.",
+                            fontSize = 11.sp,
+                            color = Color(0xFF64748B),
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
                     } else {
-                        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
                             customWords.take(15).forEach { item ->
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .background(Color(0xFF25232A), shape = RoundedCornerShape(10.dp))
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(text = item.word, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = item.word,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
                                     IconButton(
                                         onClick = {
                                             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
@@ -560,7 +880,12 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
                                         },
                                         modifier = Modifier.size(24.dp)
                                     ) {
-                                        Icon(Icons.Default.Delete, contentDescription = "Delete from dictionary", tint = Color.Red.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete from dictionary",
+                                            tint = Color(0xFFF87171),
+                                            modifier = Modifier.size(16.dp)
+                                        )
                                     }
                                 }
                             }
@@ -570,50 +895,61 @@ fun DashboardScreen(modifier: Modifier = Modifier, prefs: PreferenceManager, rep
             }
         }
 
-        // STEP 6: Live interactive Keyboard layout Playground
+        // STEP 7: Live interactive Keyboard layout Playground
         item {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFEDF4FE)),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, Color(0xFF0F172A)),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "🚀 Live Keyboard Playground (টাইপ টেস্ট)",
-                        fontSize = 15.sp,
+                        text = "🚀 Live Keyboard Playground",
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1570EF)
+                        color = Color(0xFF38BDF8)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(text = "Tap inside the input box below to open the 'Bangla AI Keyboard' and write dynamically! See and test haptics, voice and AI instantly.", fontSize = 11.sp, color = Color.Gray)
+                    Text(
+                        text = "Tap inside the input box below to open 'Bangla AI Keyboard' and write dynamically! Verify the layout, haptics, and instant AI lookup.",
+                        fontSize = 11.sp,
+                        color = Color(0xFF94A3B8)
+                    )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     var testInput by remember { mutableStateOf("") }
                     OutlinedTextField(
                         value = testInput,
                         onValueChange = { testInput = it },
-                        modifier = Modifier.fillMaxWidth().height(120.dp),
-                        placeholder = { Text("এখানে ক্লিক করে কীবোর্ড পরীক্ষা করুন...", color = Color.DarkGray) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        placeholder = { Text("এখানে ক্লিক করে কীবোর্ড পরীক্ষা করুন...", color = Color(0xFF64748B)) },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = Color(0xFF1570EF)
-                        )
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color(0xFF38BDF8),
+                            unfocusedBorderColor = Color(0xFF0F172A),
+                            focusedContainerColor = Color(0xFF121212),
+                            unfocusedContainerColor = Color(0xFF121212)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     )
                 }
             }
         }
 
         item {
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "🛡️ Private and Secure local processing. Ridmik-inspired user privacy protocols: No keystroke logs or private typed data is ever transmitted or collected.",
                 fontSize = 10.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
-                color = Color.Gray
+                color = Color(0xFF64748B),
+                lineHeight = 14.sp
             )
         }
     }
@@ -624,17 +960,17 @@ fun StatusStepRow(stepNum: String, title: String, status: Boolean, onAction: () 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFF9FAFB))
-            .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0xFF25232A))
+            .border(1.dp, Color(0xFF2D2A37), RoundedCornerShape(14.dp))
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(24.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(if (status) Color(0xFF12B76A) else Color(0xFFF04438)),
+                .size(28.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(if (status) Color(0xFF10B981) else Color(0xFFEF4444)),
             contentAlignment = Alignment.Center
         ) {
             Text(text = stepNum, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
@@ -643,22 +979,23 @@ fun StatusStepRow(stepNum: String, title: String, status: Boolean, onAction: () 
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF344054))
+            Text(text = title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
             Text(
-                text = if (status) "Status: Enabled" else "Status: Click to configure",
+                text = if (status) "Status: Active" else "Status: Click to setup",
                 fontSize = 11.sp,
-                color = if (status) Color(0xFF12B76A) else Color(0xFFF04438)
+                color = if (status) Color(0xFF10B981) else Color(0xFFEF4444)
             )
         }
 
         Button(
             onClick = onAction,
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (status) Color(0xFFD1FADF) else Color(0xFFFECDCA),
-                contentColor = if (status) Color(0xFF027A48) else Color(0xFFB42318)
+                containerColor = if (status) Color(0xFF064E3B) else Color(0xFF7F1D1D),
+                contentColor = if (status) Color(0xFF34D399) else Color(0xFFFCA5A5)
             ),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-            modifier = Modifier.height(32.dp)
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+            modifier = Modifier.height(34.dp)
         ) {
             Text(text = if (status) "Active" else "Setup", fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }

@@ -88,8 +88,8 @@ class KeyboardService : InputMethodService(), LifecycleOwner, ViewModelStoreOwne
 
     override fun onCreate() {
         super.onCreate()
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         savedStateRegistryController.performRestore(null)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
 
         prefs = PreferenceManager(this)
         database = AppDatabase.getDatabase(this)
